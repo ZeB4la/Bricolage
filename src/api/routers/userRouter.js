@@ -5,6 +5,8 @@ const {
   getCurrentUser,
   updateProfile,
   listUsersWithFilters,
+  requestPasswordReset,
+  resetPassword,
 } = require("../../controllers/userController");
 const authMiddleware = require("../../middleware/authMiddleware");
 const roleMiddleware = require("../../middleware/roleMiddleware");
@@ -19,6 +21,12 @@ router.post("/register", registerUser);
 
 // Login User
 router.post("/login", loginUser);
+
+// Request Password Reset
+router.post("/request-password-reset", requestPasswordReset);
+
+// Reset Password
+router.post("/reset-password/:token", resetPassword);
 
 // ==========================USER ROUTES==========================
 

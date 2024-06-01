@@ -3,6 +3,71 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const jwtConfig = require("../api/config/jwtConfig");
 const mongoose = require("mongoose");
+const { sendResetEmail } = require("../services/emailService");
+
+// Request Password Reset
+const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email" });
+    }
+
+    const token = jwt.sign({ userId: user._id }, jwtConfig.jwtSecret, {
+      expiresIn: "5m",
+    });
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 300000;
+    await user.save();
+
+    await sendResetEmail(email, token);
+
+    res.json({ message: "Password reset email sent", token: token }); // TODO: Remove token
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Reset Password
+const resetPassword = async (req, res) => {
+  const { newPassword, cnfPassword } = req.body;
+  const { token } = req.params;
+
+  if (newPassword !== cnfPassword)
+    return res.status(400).json({ message: "Passwords do not match" });
+
+  if (!token) return res.status(400).json({ message: "Token is required" });
+  if (!newPassword)
+    return res.status(400).json({ message: "New password is required" });
+
+  try {
+    const decoded = jwt.verify(token, jwtConfig.jwtSecret);
+
+    const user = await User.findOne({
+      _id: decoded.userId,
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Register User
 const registerUser = async (req, res) => {
@@ -111,4 +176,6 @@ module.exports = {
   getCurrentUser,
   updateProfile,
   listUsersWithFilters,
+  requestPasswordReset,
+  resetPassword,
 };
