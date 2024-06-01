@@ -5,6 +5,38 @@ const jwtConfig = require("../api/config/jwtConfig");
 const mongoose = require("mongoose");
 const { sendResetEmail } = require("../services/emailService");
 
+// Change Password
+const changePassword = async (req, res) => {
+  const { oldPassword, newPassword, cnfNewPassword } = req.body;
+
+  if (!oldPassword || !newPassword || !cnfNewPassword) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  if (newPassword !== cnfNewPassword) {
+    return res.status(400).json({ message: "New passwords do not match" });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Old password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Request Password Reset
 const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
@@ -178,4 +210,5 @@ module.exports = {
   listUsersWithFilters,
   requestPasswordReset,
   resetPassword,
+  changePassword,
 };

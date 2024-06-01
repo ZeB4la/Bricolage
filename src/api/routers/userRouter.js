@@ -7,6 +7,7 @@ const {
   listUsersWithFilters,
   requestPasswordReset,
   resetPassword,
+  changePassword,
 } = require("../../controllers/userController");
 const authMiddleware = require("../../middleware/authMiddleware");
 const roleMiddleware = require("../../middleware/roleMiddleware");
@@ -35,6 +36,9 @@ router.get("/me", authMiddleware, getCurrentUser);
 
 // Update User Profile (name only)
 router.put("/me-update", authMiddleware, updateProfile);
+
+// Change Password
+router.post("/change-password", authMiddleware, changePassword);
 
 // ==========================ADMIN ROUTES==========================
 
