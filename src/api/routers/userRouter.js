@@ -8,6 +8,7 @@ const {
   requestPasswordReset,
   resetPassword,
   changePassword,
+  editUser,
 } = require("../../controllers/userController");
 const authMiddleware = require("../../middleware/authMiddleware");
 const roleMiddleware = require("../../middleware/roleMiddleware");
@@ -48,6 +49,14 @@ router.get(
   authMiddleware,
   roleMiddleware(roles.ADMIN),
   listUsersWithFilters
+);
+
+// Edit User
+router.put(
+  "/admin/users/:userId",
+  authMiddleware,
+  roleMiddleware(roles.ADMIN),
+  editUser
 );
 
 module.exports = router;

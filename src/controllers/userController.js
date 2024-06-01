@@ -5,6 +5,49 @@ const jwtConfig = require("../api/config/jwtConfig");
 const mongoose = require("mongoose");
 const { sendResetEmail } = require("../services/emailService");
 
+// Edit User
+const editUser = async (req, res) => {
+  const { userId } = req.params;
+  const { name, email, role } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (name && name === user.name) {
+      return res.status(400).json({
+        message: "The new name cannot be the same as the current name",
+      });
+    }
+
+    if (email && email === user.email) {
+      return res.status(400).json({
+        message: "The new email cannot be the same as the current email",
+      });
+    }
+
+    if (email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser && existingUser._id.toString() !== userId) {
+        return res
+          .status(400)
+          .json({ message: "Email already in use by another user" });
+      }
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+
+    const updatedUser = await user.save();
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Change Password
 const changePassword = async (req, res) => {
   const { oldPassword, newPassword, cnfNewPassword } = req.body;
@@ -211,4 +254,5 @@ module.exports = {
   requestPasswordReset,
   resetPassword,
   changePassword,
+  editUser,
 };
