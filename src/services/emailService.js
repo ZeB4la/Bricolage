@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
   },
   tls: {
     rejectUnauthorized: false,
-  }, // This is just for test, in production its open for "man-in-the-middle" attacks
+  }, // TODO: This is just for test, in production its open for "man-in-the-middle" attacks
 });
 
 const sendResetEmail = (email, token) => {
