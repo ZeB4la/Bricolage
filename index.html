@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .product {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 16px;
+      margin: 16px;
+      max-width: 300px;
+    }
+    .product img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+    .product h3 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Product List</h1>
+  <div id="productList"></div>
+
+  <script>
+    async function loadProducts() {
+      try {
+        const response = await fetch('http://localhost:3000/api/product/products');
+        const products = await response.json();
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+        products.forEach(product => {
+          const productElement = document.createElement('div');
+          productElement.classList.add('product');
+          productElement.innerHTML = `
+            <h3>${product.title}</h3>
+            <p>${product.description}</p>
+            <p>Price: $${product.price}</p>
+            <p>Minimum Quantity: ${product.minQuantity}</p>
+            <img src="${product.image}" alt="${product.title}">
+          `;
+          productList.appendChild(productElement);
+        });
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
