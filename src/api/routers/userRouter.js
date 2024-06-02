@@ -59,4 +59,6 @@ router.put(
   editUser
 );
 
+//TODO: Delete User
+
 module.exports = router;
