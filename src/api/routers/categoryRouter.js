@@ -1,4 +1,3 @@
-// categoryRouter.js
 const express = require("express");
 const {
   createCategory,
